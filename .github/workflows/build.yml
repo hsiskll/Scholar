@@ -41,7 +41,7 @@ jobs:
         working-directory: cseguide-app
         run: |
           npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
 
       - name: Write Capacitor config
         working-directory: cseguide-app
@@ -67,6 +67,24 @@ jobs:
       - name: Sync Capacitor
         working-directory: cseguide-app
         run: npx cap sync android
+
+      - name: Fix Kotlin duplicate classes
+        working-directory: cseguide-app
+        run: |
+          # Inject Kotlin version resolution into the root build.gradle
+          cat >> android/build.gradle << 'EOF'
+
+          // Fix duplicate Kotlin stdlib classes
+          subprojects {
+              configurations.all {
+                  resolutionStrategy {
+                      force "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
+                      force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.0"
+                      force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0"
+                  }
+              }
+          }
+          EOF
 
       - name: Make gradlew executable
         working-directory: cseguide-app
